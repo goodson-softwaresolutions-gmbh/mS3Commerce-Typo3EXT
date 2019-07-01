@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<T3locallang>
+	<meta type="array">
+		<description>Language labels for extension 'mS3 Commerce'</description>
+		<type>module</type>
+		<csh_table></csh_table>
+		<fileId>EXT:ms3commerce/locallang.xml</fileId>
+		<labelContext type="array">
+			<label index="pi1_title"></label>
+		</labelContext>
+	</meta>
+	<data type="array">
+		<languageKey index="default" type="array">
+			<label index="pi1_title">mS3 Commerce</label>
+		</languageKey>
+	</data>
+</T3locallang>

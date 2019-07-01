@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<T3DataStructure>
+	<meta>
+		<langDisable>1</langDisable>
+	</meta>
+    <ROOT>
+		<TCEforms>
+			<sheetTitle>Configuration</sheetTitle>
+		</TCEforms>
+		<type>array</type>
+		<el>
+			<configuration>
+				<TCEforms>
+					<label>mS3 Commerce Configuration</label>
+					<config>
+						<type>text</type>
+						<cols>30</cols>
+						<rows>20</rows>
+					</config>
+				</TCEforms>
+			</configuration>
+		</el>
+	</ROOT>
+</T3DataStructure>

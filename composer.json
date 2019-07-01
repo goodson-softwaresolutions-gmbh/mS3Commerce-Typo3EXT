@@ -1,0 +1,16 @@
+{
+    "name": "ms3commerce/ms3commerce",
+    "type": "typo3-cms-extension",
+    "description": "mS3 Commerce Typo3 Extension",
+    "authors": [
+        {
+            "name": "Goodson GmbH",
+            "email": "support@goodson.at"
+        }
+    ],
+    "require": {
+        "typo3/cms-core": ">=6,<8",
+        "php": ">=5.4.0",
+        "ms3commerce/dataTransfer": "dev-master"
+    }
+}
