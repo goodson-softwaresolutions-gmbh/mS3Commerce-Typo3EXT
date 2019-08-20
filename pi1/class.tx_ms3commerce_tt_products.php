@@ -15,6 +15,7 @@
  * ************************************************************* */
 
 require_once(__DIR__ . '/../load_dataTransfer_config.php');
+require_once("class.tx_ms3commerce_mail_overload.php");
 
 /**
  * Implementation when tt_product used as shop system.
@@ -52,7 +53,7 @@ class tx_ms3commerce_tt_products implements itx_ms3commerce_shop {
 		require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('static_info_tables') . 'pi1/class.tx_staticinfotables_pi1.php');
 		//Mithilfe dieser Funktion kÃ¶nnen lÃ¤nderspeziefische Preisanzeigen gemacht werden
 		//Wird momentan nicht verwendet
-		$staticInfoObj = &TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj('&tx_staticinfotables_pi1');
+		$staticInfoObj = TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj('SJBR\StaticInfoTables\PiBaseApi');
 		if ($staticInfoObj->needsInit()) {
 			$staticInfoObj->init();
 		}
@@ -84,8 +85,8 @@ class tx_ms3commerce_tt_products implements itx_ms3commerce_shop {
 		}
 	}
 
-	public function getPrice($asimOid, $forQty = 1, $qty = 1, $variant = null) {
-		return $this->calc->getPrice($asimOid, $forQty, $qty, $variant);
+	public function getPrice($ms3Oid, $forQty = 1, $qty = 1, $variant = null) {
+		return $this->calc->getPrice($ms3Oid, $forQty, $qty, $variant);
 	}
 
 	public function formatPrice($price) {
@@ -112,11 +113,11 @@ class tx_ms3commerce_tt_products implements itx_ms3commerce_shop {
 	 * @return string 
 	 */
 	public function fillShopMarkerContent($marker, $productId) {
-		$asimOid = $this->calc->getAsimOidForProdId($productId);
-		$uid = $this->calc->getTTUidForAsimOid($asimOid);
+		$ms3Oid = $this->calc->getMs3OidForProdId($productId);
+		$uid = $this->calc->getTTUidForMs3Oid($ms3Oid);
 
 		$basket = $this->calc->getCleanedTTBasket();
-		$cust = $this->calc->custom->fillShopMarkerContent($marker, $productId, $asimOid, $uid, $basket);
+		$cust = $this->calc->custom->fillShopMarkerContent($marker, $productId, $ms3Oid, $uid, $basket);
 		if ($cust !== null) {
 			return $cust;
 		}
@@ -152,26 +153,26 @@ class tx_ms3commerce_tt_products implements itx_ms3commerce_shop {
 				break;
 			//Anzeige des aktuellen Preis
 			case 'SHOP_PRICE':
-				$price = $this->calc->getPrice($asimOid, 1);
+				$price = $this->calc->getPrice($ms3Oid, 1);
 				$price = $this->calc->formatPrice($price);
 				return $price;
 				break;
 			case 'SHOP_PRICE_FOR_QTY':
 				$uidQty = $this->calc->getItemQty($basket, $uid);
-				$price = $this->calc->getPrice($asimOid, $uidQty, 1, $basket[$uid]);
+				$price = $this->calc->getPrice($ms3Oid, $uidQty, 1, $basket[$uid]);
 				$price = $this->calc->formatPrice($price);
 				return $price;
 				break;
 			case 'SHOP_PRICE_TOTAL':
 				$uidQty = $this->calc->getItemQty($basket, $uid);
-				$price = $this->calc->getPrice($asimOid, $uidQty, $uidQty, $basket[$uid]);
+				$price = $this->calc->getPrice($ms3Oid, $uidQty, $uidQty, $basket[$uid]);
 				$price = $this->calc->formatPrice($price);
 				return $price;
 				break;
 
 			case 'SHOP_PRICE_NOT_REDUCED':
-				$price = $this->calc->getPrice($asimOid);
-				$oldprice = $this->calc->getNotReducedPrice($asimOid);
+				$price = $this->calc->getPrice($ms3Oid);
+				$oldprice = $this->calc->getNotReducedPrice($ms3Oid);
 
 				if ($price != $oldprice) {
 					$oldprice = $this->calc->formatPrice($oldprice);
@@ -180,7 +181,7 @@ class tx_ms3commerce_tt_products implements itx_ms3commerce_shop {
 				break;
 			//Anzeige der Verfügbarkeit
 			case 'SHOP_AVAILABILITY':
-				return $this->calc->getAvailability($asimOid);
+				return $this->calc->getAvailability($ms3Oid);
 				break;
 			//Anzeige der Notiz zum Produkt
 			case 'SHOP_BASKET_NOTE':
@@ -202,13 +203,13 @@ class tx_ms3commerce_tt_products implements itx_ms3commerce_shop {
 				//Anzeige des Prices für eine bestimmte Menge
 				if (substr($marker, 0, 13) == 'SHOP_PRICE(q=') {
 					$q = intval(substr($marker, 13, -1));
-					$price = $this->calc->getPrice($asimOid, $q, 1);
+					$price = $this->calc->getPrice($ms3Oid, $q, 1);
 					$price = $this->calc->formatPrice($price);
 					return $price;
 				}
 				if (substr($marker, 0, 25) == 'SHOP_PRICE_NOT_REDUCED(q=') {
 					$q = intval(substr($marker, 25, -1));
-					$oldprice = $this->calc->getNotReducedPrice($asimOid, $q);
+					$oldprice = $this->calc->getNotReducedPrice($ms3Oid, $q);
 					$oldprice = $this->calc->formatPrice($oldprice);
 
 					return $oldprice;
@@ -369,12 +370,9 @@ class tx_ms3commerce_tt_products implements itx_ms3commerce_shop {
 		$contItem = '';
 
 		foreach ($order->items as $item) {
-			$pid = $this->calc->getProdIdForAsimOid($item['asimOid']);
+			$pid = $this->calc->getProdIdForMs3Oid($item['asimOid']);
 			$subs = $this->template->fillProductMarkerContentArray($markerItems, $pid);
 			$subs['###ORDER_QUANTITY###'] = $item['quantity'];
-			// THESE WILL USE NEW PRICES ACCORDING TO USER!!!
-			//$subs['###ORDER_PRICE###'] = $this->calc->getPrice($item->asimOid, 1);
-			//$subs['###ORDER_PRICE_TOTAL###'] = $this->calc->getPrice($item['asimOid'], $item['quantity']);
 
 			$this->calc->custom->getOrderDetailMarkers($markerArray, $item, $order);
 
@@ -429,7 +427,7 @@ class tx_ms3commerce_tt_products implements itx_ms3commerce_shop {
 
 			$template = $this->template->tplutils->substituteSubpart($template, "###BASKET_EMPTY###", '');
 			foreach ($order->items as $key => $item) {
-				$pid = $this->calc->getProdIdForAsimOid($item['asimOid']);
+				$pid = $this->calc->getProdIdForMs3Oid($item['asimOid']);
 				$subs = $this->template->fillProductMarkerContentArray($markerItems, $pid);
 				$subs['###BASKET_POSITION###'] = $key + 1;
 				$contItem .= $this->template->tplutils->substituteMarkerArray($tmplItem, $subs);
@@ -511,7 +509,7 @@ class tx_ms3commerce_shop_calc {
 				unset($basket[$art]);
 			} else {
 				if ($validateItems) {
-					// Strange case where tt_products do not represent valid asim products!
+					// Strange case where tt_products do not represent valid mS3 products!
 					$uid = $this->getProdIdForTTuid($art);
 					if (!$uid) {
 						unset($basket[$art]);
@@ -553,12 +551,12 @@ class tx_ms3commerce_shop_calc {
 	}
 
 	function getBasketPrices() {
-		$basket = &TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj('&tx_ttproducts_basket');
+		$basket = &TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj('tx_ttproducts_basket');
 		return $basket->calculatedArray;
 	}
 
 	function clearBasket() {
-		$basket = &TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj('&tx_ttproducts_basket');
+		$basket = &TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj('tx_ttproducts_basket');
 		$basket->clearBasket(true);
 	}
 
@@ -571,10 +569,10 @@ class tx_ms3commerce_shop_calc {
 
 			$items = array();
 			foreach ($basket as $pid => $variants) {
-				$asimOid = $this->getAsimOidForTTUid($pid);
+				$ms3Oid = $this->getMs3OidForTTUid($pid);
 				$q = $variants[';;;;;;;;;'];
 				$items[] = array(
-					'asimOid' => $asimOid,
+					'asimOid' => $ms3Oid,
 					'quantity' => $q,
 					'tt_article_uid' => 0
 				);
@@ -594,7 +592,7 @@ class tx_ms3commerce_shop_calc {
 			$items = $order->items;
 			$basket = array();
 			foreach ($items as $item) {
-				$pid = $this->getTTUidForAsimOid($item['asimOid']);
+				$pid = $this->getTTUidForMs3Oid($item['asimOid']);
 				$qty = $item['quantity'];
 				$basket[$pid][';;;;;;;;;'] = $qty;
 			}
@@ -606,22 +604,22 @@ class tx_ms3commerce_shop_calc {
 	/**
 	 * Herausfinden des Preises aus der shopprice Tabelle
 	 * @global type $TSFE
-	 * @param type $asimOid
+	 * @param type $ms3Oid
 	 * @param type $qty
 	 * @return price 
 	 */
-	function getPrice($asimOid, $forQty = 1, $qty = 1, $variant = null) {
+	function getPrice($ms3Oid, $forQty = 1, $qty = 1, $variant = null) {
 		$markt = $this->market;
 		$userperm = $this->getUserRights();
 
 		// Custom price
-		$price = $this->custom->getPrice($asimOid, $forQty, $qty, $markt, $userperm, $variant);
+		$price = $this->custom->getPrice($ms3Oid, $forQty, $qty, $markt, $userperm, $variant);
 		if ($price !== null) {
 			return $price;
 		}
 
 		// Simple price
-		$pid = $this->getProdIdForAsimOid($asimOid);
+		$pid = $this->getProdIdForMs3Oid($ms3Oid);
 		$fid = $this->dbutils->getFeatureIdByName($this->conf['product_price_feature_name']);
 		if ($fid != 0) {
 			$price = $this->dbutils->getProductValue($pid, $fid, "NUMBER");
@@ -642,13 +640,13 @@ class tx_ms3commerce_shop_calc {
 				$usersql .= "'" . $perm . "', ";
 			}
 			$usersql = substr($usersql, 0, -2);
-			$rs = $this->db->exec_SELECTquery("Price", "ShopPrices", "ProductAsimOID = '" . $asimOid . "' AND Market " . $markt . " AND User in (" . $usersql . ") AND StartQty <= " . $forQty, '' .
+			$rs = $this->db->exec_SELECTquery("Price", "ShopPrices", "ProductAsimOID = '" . $ms3Oid . "' AND Market " . $markt . " AND User in (" . $usersql . ") AND StartQty <= " . $forQty, '' .
 					"StartQty DESC", "1");
 		}
 		if ($rs) {
 			$row = $this->db->sql_fetch_row($rs);
 			if (!$row) {
-				$rs = $this->db->exec_SELECTquery("Price", "ShopPrices", "ProductAsimOID = '" . $asimOid . "' AND Market " . $markt . " AND User IS NULL AND StartQty <= " . $forQty, '', "StartQty DESC", "1");
+				$rs = $this->db->exec_SELECTquery("Price", "ShopPrices", "ProductAsimOID = '" . $ms3Oid . "' AND Market " . $markt . " AND User IS NULL AND StartQty <= " . $forQty, '', "StartQty DESC", "1");
 				if ($rs) {
 					$row = $this->db->sql_fetch_row($rs);
 				}
@@ -659,8 +657,8 @@ class tx_ms3commerce_shop_calc {
 		return $price * $qty;
 	}
 
-	function getMinQuantityForPrice($asimOid, $forQty = 1, $variant = null) {
-		$minQty = $this->custom->getMinQuantityForPrice($asimOid, $forQty, $variant);
+	function getMinQuantityForPrice($ms3Oid, $forQty = 1, $variant = null) {
+		$minQty = $this->custom->getMinQuantityForPrice($ms3Oid, $forQty, $variant);
 		if (is_null($minQty) || intval($minQty) == 0) {
 			return 1;
 		}
@@ -669,23 +667,23 @@ class tx_ms3commerce_shop_calc {
 
 	/**
 	 * Herausfinden des nicht Reduziertem Preises welcher angezeigt wird wenn der aktuelle Preis geringer ist.
-	 * @param type $asimOid
+	 * @param type $ms3Oid
 	 * @param type $qty
 	 * @return notReducedPrice 
 	 */
-	function getNotReducedPrice($asimOid, $qty = 1) {
+	function getNotReducedPrice($ms3Oid, $qty = 1) {
 
 		$markt = $this->market;
 		$userperm = $this->getUserRights();
 
 		// Custom
-		$price = $this->custom->getNotReducedPrice($asimOid, $qty, $markt, $userperm);
+		$price = $this->custom->getNotReducedPrice($ms3Oid, $qty, $markt, $userperm);
 		if ($price !== null) {
 			return $price;
 		}
 
 		// Simple price
-		$pid = $this->getProdIdForAsimOid($asimOid);
+		$pid = $this->getProdIdForMs3Oid($ms3Oid);
 		$fid = $this->dbutils->getFeatureIdByName($this->conf['product_not_reduced_price_feature_name']);
 		if ($fid != 0) {
 			$price = $this->dbutils->getProductValue($pid, $fid, "NUMBER");
@@ -707,7 +705,7 @@ class tx_ms3commerce_shop_calc {
 			$markt = 'IS NULL';
 		}
 
-		$rs = $this->db->exec_SELECTquery("Price", "ShopPrices", "ProductAsimOID = '" . $asimOid . "' AND Market " . $markt . " AND (" . $usersql . ") AND StartQty <= " . $qty, '', "Price DESC", "1");
+		$rs = $this->db->exec_SELECTquery("Price", "ShopPrices", "ProductAsimOID = '" . $ms3Oid . "' AND Market " . $markt . " AND (" . $usersql . ") AND StartQty <= " . $qty, '', "Price DESC", "1");
 		if ($rs) {
 			$row = $this->db->sql_fetch_row($rs);
 			$this->db->sql_free_result($rs);
@@ -719,11 +717,11 @@ class tx_ms3commerce_shop_calc {
 
 	/**
 	 * Verfügbarkeit von Produkten
-	 * @param type $asimOid
+	 * @param type $ms3Oid
 	 * @return  availability
 	 */
-	function getAvailability($asimOid) {
-		$availability = $this->custom->getAvailability($asimOid);
+	function getAvailability($ms3Oid) {
+		$availability = $this->custom->getAvailability($ms3Oid);
 		if (!$availability) {
 			if ($this->market) {
 				$markt = "= '" . $this->market . "'";
@@ -731,11 +729,11 @@ class tx_ms3commerce_shop_calc {
 				$markt = 'IS NULL';
 			}
 
-			$rs = $this->db->exec_SELECTquery("Availability", "ShopAvailability", "ProductAsimOID = '" . $asimOid . "' AND Market " . $markt . " LIMIT 1");
+			$rs = $this->db->exec_SELECTquery("Availability", "ShopAvailability", "ProductAsimOID = '" . $ms3Oid . "' AND Market " . $markt . " LIMIT 1");
 			$row = $this->db->sql_fetch_row($rs);
 			$this->db->sql_free_result($rs);
 			if (!$row && $this->market != null) {
-				$rs = $this->db->exec_SELECTquery("Availability", "ShopAvailability", "ProductAsimOID = '" . $asimOid . "' AND Market IS NULL LIMIT 1");
+				$rs = $this->db->exec_SELECTquery("Availability", "ShopAvailability", "ProductAsimOID = '" . $ms3Oid . "' AND Market IS NULL LIMIT 1");
 				$row = $this->db->sql_fetch_row($rs);
 				$this->db->sql_free_result($rs);
 			}
@@ -778,11 +776,11 @@ class tx_ms3commerce_shop_calc {
 	}
 
 	/**
-	 * 	Gibt die AsimOid mithilfe der uid aus der tt_products Tabelle zurück
+	 * 	Gibt die ms3Oid mithilfe der uid aus der tt_products Tabelle zurück
 	 * @param type $uid
 	 * @return type 
 	 */
-	function getAsimOidForTTUid($uid) {
+	function getMs3OidForTTUid($uid) {
 		$t3db = tx_ms3commerce_db_factory_cms::getT3Database();
 		$rs = $t3db->exec_SELECTquery("AsimOid", "tt_products", "uid = " . $uid);
 		if ($rs) {
@@ -795,11 +793,11 @@ class tx_ms3commerce_shop_calc {
 
 	function getProdIdForTTuid($uid) {
 
-		$oid = $this->getAsimOidForTTUid($uid);
-		return $this->getProdIdForAsimOid($oid);
+		$oid = $this->getMs3OidForTTUid($uid);
+		return $this->getProdIdForMs3Oid($oid);
 	}
 
-	function getAsimOidForProdId($pid) {
+	function getMs3OidForProdId($pid) {
 		$rs = $this->db->exec_SELECTquery("AsimOid", "Product", "Id = " . $pid);
 		if ($rs) {
 			$row = $this->db->sql_fetch_row($rs);
@@ -812,11 +810,11 @@ class tx_ms3commerce_shop_calc {
 	/**
 	 * Herausfinden der Uid aus der tt_products Tabelle
 	 * @param id $productId
-	 * @return AsimOid oder false wenn nicht vorhanden 
+	 * @return ms3Oid oder false wenn nicht vorhanden 
 	 */
-	function getTTUidForAsimOid($asimOid) {
+	function getTTUidForMs3Oid($ms3Oid) {
 		$t3db = tx_ms3commerce_db_factory_cms::getT3Database();
-		$rs = $t3db->exec_SELECTquery('uid', "tt_products", "`AsimOid` = '$asimOid'");
+		$rs = $t3db->exec_SELECTquery('uid', "tt_products", "`AsimOid` = '$ms3Oid'");
 		if ($rs) {
 			$row = $t3db->sql_fetch_row($rs);
 			$t3db->sql_free_result($rs);
@@ -831,13 +829,13 @@ class tx_ms3commerce_shop_calc {
 	 * @return tt_products uid for product id
 	 */
 	function getTTUidForProdId($prodId) {
-		$asimOid = $this->getAsimOidForProdId($prodId);
-		return $this->getTTUidForAsimOid($asimOid);
+		$ms3Oid = $this->getMs3OidForProdId($prodId);
+		return $this->getTTUidForMs3Oid($ms3Oid);
 	}
 
 	function getVariantRowFromArticle($artUid) {
 		$variant = TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj('&tx_ttproducts_variant');
-		if (!$variant->useArticles) {
+		if (!$variant->getUseArticles()) {
 			return null;
 		}
 
@@ -882,10 +880,10 @@ class tx_ms3commerce_shop_calc {
 		return $varLine;
 	}
 
-	function getProdIdForAsimOid($asimOid) {
-		return $this->dbutils->getProductIdByOid($asimOid);
+	function getProdIdForMs3Oid($ms3Oid) {
+		return $this->dbutils->getProductIdByOid($ms3Oid);
 		/*
-		  $rs = $this->db->exec_SELECTquery("Id", "Product", "asimOid = '$asimOid'");
+		  $rs = $this->db->exec_SELECTquery("Id", "Product", "asimOid = '$ms3Oid'");
 		  if ( $rs ) {
 		  $row = $this->db->sql_fetch_row( $rs );
 		  $this->db->sql_free_result( $rs );
@@ -989,7 +987,7 @@ class tx_ms3commerce_shop_calc {
 		$resItems = $t3db->exec_SELECTquery("sys_products_orders_qty as quantity, tt_products_uid , tt_products_articles_uid", " sys_products_orders_mm_tt_products", "sys_products_orders_uid=" . $orderId);
 		if ($resItems) {
 			while ($row = $t3db->sql_fetch_row($resItems)) {
-				$items[] = array('quantity' => $row[0], 'asimOid' => $this->getAsimOidForTTUid($row[1]), 'tt_article_uid' => $row[2]);
+				$items[] = array('quantity' => $row[0], 'asimOid' => $this->getMs3OidForTTUid($row[1]), 'tt_article_uid' => $row[2]);
 			}
 			$orderObj->items = $items;
 		}
@@ -1123,8 +1121,8 @@ class tx_tt_products_hooks {
 	function changeBasketItem(&$row, $fetchMode, $funcTablename, &$item) {
 		$this->dbgstart();
 		//Preis herausfinden
-		$asimOid = $this->calc->getAsimOidForTTUid($row['uid']);
-		if ($asimOid) {
+		$ms3Oid = $this->calc->getMs3OidForTTUid($row['uid']);
+		if ($ms3Oid) {
 			// get variant
 			if ($fetchMode == 'useExt') {
 				$varLine = current($row['ext']['tt_products']);
@@ -1134,7 +1132,7 @@ class tx_tt_products_hooks {
 				// Comes only in tt_products LIST and SINGLE view. Not used with mS3 Commerce
 				$var = null;
 			}
-			$price = $this->calc->getPrice($asimOid, $item['count'], 1, $var);
+			$price = $this->calc->getPrice($ms3Oid, $item['count'], 1, $var);
 
 			//Preisaddition
 			$row['tax'] = $this->ttconf['TAXpercentage'];
@@ -1265,34 +1263,34 @@ class tx_tt_products_hooks {
 	 */
 	private function getItemMarker(&$markerArray, $row) {
 		$this->dbgstart();
-		$priceViewObj = &TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj('&tx_ttproducts_field_price_view');
+		$priceViewObj = &TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj('tx_ttproducts_field_price_view');
 		$uid = $markerArray['###PRODUCT_UID###'];
-		$asimOid = $this->calc->getAsimOidForTTUid($uid);
-		$pid = $this->calc->getProdIdForAsimOid($asimOid);
+		$ms3Oid = $this->calc->getMs3OidForTTUid($uid);
+		$pid = $this->calc->getProdIdForMs3Oid($ms3Oid);
 
 		$notes = tx_ms3commerce_plugin_sessionUtils::loadSession("shopNotes");
 		$markerArray['###PRODUCT_NOTE###'] = $notes[$uid];
 		$markerArray['###PRODUCT_NOTE_NAME###'] = 'ttp_note[' . $uid . ']';
-		$markerArray['###PRODUCT_TITLE###'] = $this->getProductValue($asimOid, $this->conf['product_title_feature_name']);
-		$markerArray['###PRODUCT_TITLE_RAW###'] = $this->getProductValue($asimOid, $this->conf['product_title_feature_name'], true);
-		$markerArray['###PRODUCT_DESCRIPTION###'] = $this->getProductValue($asimOid, $this->conf['product_description_feature_name']);
-		$markerArray['###PRODUCT_DESCRIPTION_RAW###'] = $this->getProductValue($asimOid, $this->conf['product_description_feature_name'], true);
-		$markerArray['###PRODUCT_NAME###'] = $this->getProductName($asimOid);
+		$markerArray['###PRODUCT_TITLE###'] = $this->getProductValue($ms3Oid, $this->conf['product_title_feature_name']);
+		$markerArray['###PRODUCT_TITLE_RAW###'] = $this->getProductValue($ms3Oid, $this->conf['product_title_feature_name'], true);
+		$markerArray['###PRODUCT_DESCRIPTION###'] = $this->getProductValue($ms3Oid, $this->conf['product_description_feature_name']);
+		$markerArray['###PRODUCT_DESCRIPTION_RAW###'] = $this->getProductValue($ms3Oid, $this->conf['product_description_feature_name'], true);
+		$markerArray['###PRODUCT_NAME###'] = $this->getProductName($ms3Oid);
 		$markerArray['###PRODUCT_LINK###'] = $this->getLinker()->getProductLink($pid);
-		$markerArray['###SHOP_AVAILABILITY###'] = $this->calc->getAvailability($asimOid);
+		$markerArray['###SHOP_AVAILABILITY###'] = $this->calc->getAvailability($ms3Oid);
 
-		$oldprice = $this->calc->getNotReducedPrice($asimOid);
+		$oldprice = $this->calc->getNotReducedPrice($ms3Oid);
 		$span = '';
-		if ($this->calc->getPrice($asimOid) != $oldprice) {
+		if ($this->calc->getPrice($ms3Oid) != $oldprice) {
 			$oldprice = $priceViewObj->printPrice($priceViewObj->priceFormat($oldprice));
 			$span = $oldprice;
 		}
 		$markerArray['###PRICE_TAX_NOT_REDUCED###'] = $span;
 
-		$add = $this->fillAdditionalBasketSMs($asimOid);
+		$add = $this->fillAdditionalBasketSMs($ms3Oid);
 		$markerArray = array_merge($markerArray, $add);
 
-		$cust = $this->calc->custom->getItemMarker($pid, $asimOid, $uid, array('rec' => $row));
+		$cust = $this->calc->custom->getItemMarker($pid, $ms3Oid, $uid, array('rec' => $row));
 		if (is_array($cust)) {
 			foreach ($cust as $k => $v) {
 				$markerArray[$k] = $v;
@@ -1324,7 +1322,11 @@ class tx_tt_products_hooks {
 				// Get the tt_products main object (to get its cObj)
 				$ttProdTemplate = TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj("&tx_ttproducts_template");
 				$ttProdMain = TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj("&tx_ttproducts_main");
-				$tmpl = $ttProdTemplate->get('BASKET', null, $ttProdMain->cObj, $templateFile, $errorMessage);
+				if (method_exists($ttProdMain, "getTemplateCode")) {
+					$tmpl = $ttProdMain->getTemplateCode('BASKET');
+				} else {
+					$tmpl = $ttProdTemplate->get('BASKET', null, $ttProdMain->cObj, $templateFile, $errorMessage);
+				}
 				$tplUtils = new tx_ms3commerce_TplUtils(null);
 				if (tx_ms3commerce_OCI::isOCISession()) {
 					$part = $tplUtils->getSubpart($tmpl, '###MS3C_SHOP_BASKET_OCI###');
@@ -1337,7 +1339,7 @@ class tx_tt_products_hooks {
 			$this->calc->custom->addGlobalMarkers($marker, $markerArray);
 			self::$s_globalMarker_cache = $marker;
 		}
-		tx_ms3commerce_plugin_sessionUtils::mergeRecursiveWithOverrule($markerArray, self::$s_globalMarker_cache);
+		$markerArray = tx_ms3commerce_plugin_sessionUtils::mergeRecursiveWithOverrule($markerArray, self::$s_globalMarker_cache);
 	}
 
 	/**
@@ -1354,27 +1356,27 @@ class tx_tt_products_hooks {
 
 	/**
 	 * 	Mit dieser Funktion wird er Inhalt des Sachmerkmals angezeigt.
-	 * @param type $asimOid product asimOID
+	 * @param type $ms3Oid product ms3OID
 	 * @param type $featureName SM Name
 	 * @return Value oder false 
 	 */
-	function getProductValue($asimOid, $featureName, $raw = false) {
+	function getProductValue($ms3Oid, $featureName, $raw = false) {
 		$this->dbgstart();
 		$FeatureId = $this->calc->dbutils->getFeatureIdByName($featureName);
-		$pid = $this->calc->getProdIdForAsimOid($asimOid);
+		$pid = $this->calc->getProdIdForMs3Oid($ms3Oid);
 		$ret = $this->calc->dbutils->getProductValue($pid, $FeatureId, $raw);
 		$this->dbgend();
 		return $ret;
 	}
 
 	/**
-	 * Produktname aus der Asim Product Tabelle
-	 * @param type $asimOid tt_products product uid
+	 * Produktname aus der ms3 Product Tabelle
+	 * @param type $ms3Oid tt_products product uid
 	 * @return value oder false
 	 */
-	function getProductName($asimOid) {
+	function getProductName($ms3Oid) {
 		$this->dbgstart();
-		$sql = "SELECT Name FROM Product WHERE AsimOid = '$asimOid'";
+		$sql = "SELECT Name FROM Product WHERE AsimOid = '$ms3Oid'";
 		$result = $this->db->sql_query($sql);
 		if ($result) {
 			$row = $this->db->sql_fetch_row($result);
@@ -1402,12 +1404,12 @@ class tx_tt_products_hooks {
 		return $sms;
 	}
 
-	function fillAdditionalBasketSMs($asimOid) {
+	function fillAdditionalBasketSMs($ms3Oid) {
 		$sms = $this->getAdditionalBasketSMs();
 		$ret = array();
 		foreach ($sms as $smName) {
-			$ret["###SM_{$smName}_VALUE###"] = $this->getProductValue($asimOid, $smName);
-			$ret["###SM_{$smName}_RAWVALUE###"] = $this->getProductValue($asimOid, $smName, true);
+			$ret["###SM_{$smName}_VALUE###"] = $this->getProductValue($ms3Oid, $smName);
+			$ret["###SM_{$smName}_RAWVALUE###"] = $this->getProductValue($ms3Oid, $smName, true);
 		}
 		return $ret;
 	}
@@ -1442,116 +1444,10 @@ class tx_tt_products_hooks {
 class tx_tt_products_hooks_proxy {
 
 	function __construct() {
-		$hook = &TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj('EXT:ms3commerce/pi1/class.tx_ms3commerce_tt_products.php:&tx_tt_products_hooks');
+		$hook = &TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj('tx_tt_products_hooks');
 		$hook->init();
 	}
 
 }
 
-// For suppressing tt_products automatic mails.
-// 2 Situations:
-// 1. normal mail ==> tt_products hook (sendMail)
-// 2. Swift Mail ==> Swift plugin (below)
-class user_tx_ms3commerce_tt_products_mail_suppressor {
-
-	var $db;
-	var $custom;
-
-	public function __construct() {
-		$this->db = tx_ms3commerce_db_factory::buildDatabase(true);
-		$this->custom = tx_ms3commerce_pi1::makeObjectInstance('tx_ms3commerce_custom_shop');
-		$this->custom->setup($this->db, null, null, null);
-	}
-
-	public function sendMail(&$Typo3_htmlmail, &$toEMail, $subject, $message, $html, $fromEMail, $fromName, $attachment) {
-		$cc = null;
-		$bcc = null;
-		if ($this->suppressMail($toEMail)) {
-			return false;
-		}
-		$toEMail = implode(';', array($toEMail, $cc, $bcc));
-		$Typo3_htmlmail->setRecipient(explode(';', $toEMail));
-		return true;
-	}
-
-	protected function suppressMail(&$toEMail = null, &$ccEMail = null, &$bccEMail = null) {
-		$to = $toEMail;
-		$cc = $ccEMail;
-		$bcc = $bccEMail;
-		if ($this->custom->suppressFinalizeMail($toEMail, $ccEMail, $bccEMail)) {
-			return true;
-		} else {
-			if (defined('MS3C_OVERWRITE_BASKET_MAIL_RECV')) {
-				// Allow customizer to change addresses...
-				if ($to == $toEMail && $cc == $ccEMail && $bcc == $bccEMail) {
-					// Customizer didn't change mail addresses, so overwrite
-					$bccEMail = $ccEMail = "";
-					$toEMail = MS3C_OVERWRITE_BASKET_MAIL_RECV;
-				}
-			}
-			return false;
-		}
-	}
-
-}
-
-@include_once(PATH_typo3 . 'contrib/swiftmailer/swift_required.php');
-
-if (interface_exists('Swift_Events_SendListener')) {
-
-	class ux_t3lib_mail_Mailer extends TYPO3\CMS\Core\Mail\Mailer {
-
-		public function __construct(Swift_Transport $transport = NULL) {
-			parent::__construct($transport);
-			$this->registerPlugin(new tx_ms3commerce_tt_products_mail_suppressor_plugin);
-		}
-
-	}
-
-	/*
-	  // Alias for Typo3 6
-	  class mS3C_typo3_ttproducts_mailer extends ux_t3lib_mail_Mailer {
-	  public function __construct(Swift_Transport $transport = NULL)
-	  {
-	  parent::__construct($transport);
-	  }
-	  }
-	 */
-
-	class tx_ms3commerce_tt_products_mail_suppressor_plugin extends user_tx_ms3commerce_tt_products_mail_suppressor implements Swift_Events_SendListener {
-
-		private function isFinalizeMail() {
-			$fin = TYPO3\CMS\Core\Utility\GeneralUtility::_GP("products_finalize");
-			if (isset($fin) && $fin != null) {
-				return true;
-			}
-		}
-
-		public function beforeSendPerformed(Swift_Events_SendEvent $evt) {
-			if ($this->isFinalizeMail()) {
-				$to = $evt->getMessage()->getTo();
-				$cc = $evt->getMessage()->getCc();
-				$bcc = $evt->getMessage()->getBcc();
-
-				if ($this->suppressMail($to, $cc, $bcc)) {
-					$evt->cancelBubble();
-				} else {
-					$evt->getMessage()->setTo($to);
-					if ($cc) {
-						$evt->getMessage()->setCc($cc);
-					}
-					if ($bcc) {
-						$evt->getMessage()->setBcc($bcc);
-					}
-				}
-			}
-		}
-
-		public function sendPerformed(Swift_Events_SendEvent $evt) {
-			
-		}
-
-	}
-
-}
 ?>

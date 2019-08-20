@@ -752,11 +752,15 @@ class mS3CommerceElasticSearchRecordFetcher extends mS3CommerceSearchRecordFetch
 				return "";
 			}
 		} else if ($searchType == 'autoComplete') {
-			$ret = $handler->autocomplete($term, $types);
+			$menuPaths = $this->getMenuPaths($query);
+			$ret = $handler->autocomplete($term, $types, $menuPaths, $query->userRightValues, $query->restrictionValues, $limit);
 			if (is_array($ret)) {
 				$res = array();
 				foreach ($ret['aggregations']['autocomp']['buckets'] as $obj) {
-					$res[] = $obj['key'];
+					$res[] = [
+						'key' => $obj['key'],
+						'count' => $obj['doc_count']
+					];
 				}
 			} else {
 				return "";
@@ -783,7 +787,7 @@ class mS3CommerceElasticSearchRecordFetcher extends mS3CommerceSearchRecordFetch
 	private function getMenuPaths($query, $flush = false)
 	{
 		if (!$flush) {
-			if (count($query->MenuPaths) > 0) {
+			if (is_array($query->MenuPaths) && count($query->MenuPaths) > 0) {
 				// Special case: If already calculated, or given by caller, do nothing
 				return $query->MenuPaths;
 			}

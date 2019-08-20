@@ -37,7 +37,7 @@ if (defined('MS3C_SHOP_SYSTEM') && MS3C_SHOP_SYSTEM != 'None') {
  * ALL code which belongs only to the CMS belongs here.
  * We cannot access Typo3 directly outside of this class.
  * @see main(),
- * @author asim GmbH
+ * @author Goodson GmbH
  * @package	TYPO3
  * @subpackage	tx_ms3commerce
  */

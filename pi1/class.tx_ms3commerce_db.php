@@ -85,7 +85,7 @@ if (MS3C_DB_BACKEND == 'mysqli') {
 }
 
 /**
- * Wraps Typo3 database in tx_asimcommece_db interface.
+ * Wraps Typo3 database in tx_ms3commece_db interface.
  * Works on a Typo3 db (t3lib_db)
  */
 class tx_ms3commerce_db_typo3 extends tx_ms3commerce_db
@@ -228,7 +228,7 @@ class tx_ms3commerce_db_typo3_logged extends tx_ms3commerce_db_typo3
 }
 
 /**
- * Factory building asim commerce db handlers 
+ * Factory building mS3 commerce db handlers 
  */
 class tx_ms3commerce_db_factory_cms
 {
@@ -304,7 +304,7 @@ class tx_ms3commerce_db_factory_cms
 		if (self::$t3db) {
 			return self::$t3db;
 		}
-		if (self::isTypo3()) {
+		if (self::isTypo3() && isset($GLOBALS['TYPO3_DB'])) {
 			if (array_key_exists('ms3debugdb', $_GET) && $_GET['ms3debugdb']) {
 				self::$t3db = new tx_ms3commerce_db_typo3_logged( $GLOBALS['TYPO3_DB'] );
 			} else {

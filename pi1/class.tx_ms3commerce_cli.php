@@ -38,7 +38,7 @@ class tx_ms3commerce_cli extends \TYPO3\CMS\Core\Controller\CommandLineControlle
 			'synopsis' => 'mS3 Commerce task invokation',
 			'description' => 'Invokes mS3 Commerce reocurring tasks directly via CLI',
 			'examples' => 'typo3/cli_dispatch.phpsh ' . $this->extKey . ' TASK',
-			'author' => '(c) 2015 asim GmbH',
+			'author' => '(c) 2019 Goodson GmbH',
 		));
 
 		// read backend conf

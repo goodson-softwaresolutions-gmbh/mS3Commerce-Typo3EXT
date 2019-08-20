@@ -401,6 +401,7 @@ class tx_ms3commerce_search implements itx_ms3commerce_pagetypehandler {
 			$hasCustomSelection |= true;
 		}
 
+		$num = 0;
 		foreach ($menutypes as $menutype) {
 			list($tid, $tvalue,, $elemType) = mS3CommerceSearchRecordFetcher::getTableInfo($menutype, false);
 			$productTables = array($tvalue);
@@ -421,21 +422,18 @@ class tx_ms3commerce_search implements itx_ms3commerce_pagetypehandler {
 				//set selall to 1 for all products that match all includes
 				$where .= " selcustom=1 AND ElemType = '$elemType' AND selall = 0 ";
 				$where = " WHERE " . $where;
-				$updateSelAll = "UPDATE TempSearch as t1 SET selall=1" . $where;
+				$updateSelAll = "UPDATE TempSearch as t1 SET selall=1" . $where . "\r\n";
 				$result = $this->db->sql_query($updateSelAll);
+				$num += $this->db->sql_affected_rows();
 			} else {
 				// no filters so every record is set as selected (value 1)
 				$updateSql = "UPDATE TempSearch as t1\r\n";
 				$setColumns.="SET t1.selall=1";
 				$updateSql.=$setColumns . " WHERE selcustom=1 AND ElemType = '$elemType'";
 				$result = $this->db->sql_query($updateSql);
+				$num += $this->db->sql_affected_rows();
 			}
 		}
-
-		$rs = $this->db->sql_query("SELECT COUNT(*) FROM TempSearch WHERE selall=1 AND ElemType='$elemType'");
-		$row = $this->db->sql_fetch_row($rs);
-		$num = $row[0];
-		$this->db->sql_free_result($rs);
 
 		$this->timetracker->timeTrackStop();
 		return $num;
@@ -678,7 +676,7 @@ class tx_ms3commerce_search implements itx_ms3commerce_pagetypehandler {
 		if (!empty($ids)) {
 			$columns = "";
 			$joins = "";
-			$tables = "";
+			$tables = [];
 			$sortString = "";
 			//query building with dynamic joins
 			foreach ($ids as $key => $value) {
@@ -750,7 +748,7 @@ class tx_ms3commerce_search implements itx_ms3commerce_pagetypehandler {
 					. " ORDER BY $sortString $limitStr";
 			$tables[] = 'Feature f';
 		} else {  // If we do not want any features, just return the product ids
-			$sql = "SELECT DISTINCT p.id As Id, p.MenuId AS MenuId,p.ElemType AS ElemType, '' As Name FROM TempSearch  p WHERE p.selall = 1 ORDER BY ";
+			$sql = "SELECT DISTINCT p.id As Id, p.MenuId AS MenuId,p.ElemType AS ElemType, '' As Name".($orderRelevance == "Relevance DESC," ? ", Relevance ":"")."  FROM TempSearch  p WHERE p.selall = 1 ORDER BY ";
 			$sql .= $orderRelevance;
 			$sql .= " p.menuId $limitStr";
 			$tables = '';
@@ -830,13 +828,18 @@ class tx_ms3commerce_search implements itx_ms3commerce_pagetypehandler {
 				unset($ids[$customIdx]);
 			}
 
+			$filter_where = "";
+			if($ids){
+				$filter_where = " AND f.Id IN (" . implode(",", $ids) . ") ";
+			}
+
 			// Get the values for all filter features
 			$sql = "SELECT DISTINCT f.Name,f.Id,f.IsMultiFeature,pv.ContentNumber,pv.ContentPlain,pv.ContentHtml,fv.Title,fv.UnitToken,COUNT(pv.ContentPlain) AS Count\r\n"
 					. " FROM $tvalue pv\r\n"
 					. " INNER JOIN TempSearch p ON p.Id=pv.$tid  \r\n"
 					. " INNER JOIN Feature f ON f.Id=pv.FeatureId\r\n"
 					. " INNER JOIN FeatureValue fv ON fv.FeatureId=f.Id\r\n"
-					. " WHERE pv.LanguageId=$language AND f.MarketId=$market AND pv.LanguageId=$language AND f.Id IN (" . implode(",", $ids) . ") AND p.selall=1 \r\n"
+					. " WHERE pv.LanguageId=$language AND f.MarketId=$market AND pv.LanguageId=$language $filter_where AND p.selall=1 \r\n"
 					. " GROUP BY f.Id,fv.Title,fv.UnitToken,pv.ContentPlain,pv.ContentNumber,pv.ContentHtml\r\n"
 					. " ORDER BY f.Id,pv.ContentNumber,pv.ContentPlain";
 			$result = $this->db->sql_query($sql, "$tvalue pv, Feature f, FeatureValue fv");

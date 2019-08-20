@@ -25,14 +25,14 @@ interface itx_ms3commerce_custom_shop {
 	/**
 	 * Preis
 	 */
-	public function getPrice($AsimOid, $forQty, $qty, $markt, $userper, $variant = null);
+	public function getPrice($ms3Oid, $forQty, $qty, $markt, $userper, $variant = null);
 	
-	public function getMinQuantityForPrice($AsimOid, $forQty, $variant = null);
+	public function getMinQuantityForPrice($ms3Oid, $forQty, $variant = null);
 
 	/**
 	 * Verfügbarkeit
 	 */
-	public function getAvailability($AsimOid);
+	public function getAvailability($ms3Oid);
 	
 	/**
 	 * Einzelnes Item ändern 
@@ -53,7 +53,7 @@ interface itx_ms3commerce_custom_shop {
 	/**
 	 * Der nicht reduzierte Preis ermitteln 
 	 */
-	public function getNotReducedPrice($AsimOid, $qty, $markt, $userperm);
+	public function getNotReducedPrice($ms3Oid, $qty, $markt, $userperm);
 	
 	/**
 	 * Ändert gegebenenfalls den Markt 
@@ -64,12 +64,12 @@ interface itx_ms3commerce_custom_shop {
 	 * Custom Shop Markers
 	 * Must return null for default implementation! 
 	 */
-	public function fillShopMarkerContent($marker,$productId,$asimOid,$ttUid,$basket = null);
+	public function fillShopMarkerContent($marker,$productId,$ms3Oid,$ttUid,$basket = null);
 	
 	/**
 	 * Custom Shop Markers
 	 */
-	public function getItemMarker($productId,$asimOid,$ttUid,$item=null);
+	public function getItemMarker($productId,$ms3Oid,$ttUid,$item=null);
 	
 	public function getOrderFromBasket();
 /**
@@ -91,7 +91,7 @@ interface itx_ms3commerce_custom_shop {
 	
 	public function finalizeOCI(&$orderObj);
 	
-	public function getOCIMapping($asimOid, $quantity, $varLine);
+	public function getOCIMapping($ms3Oid, $quantity, $varLine);
 
 	public function getOCIStartLink();
 

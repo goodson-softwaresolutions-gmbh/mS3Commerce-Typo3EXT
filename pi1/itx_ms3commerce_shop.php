@@ -42,7 +42,7 @@ interface itx_ms3commerce_shop {
 	
 	public function isShopView($view);
 	public function getShopView($view);
-	public function getPrice($asimOid, $qty = 1);
+	public function getPrice($ms3Oid, $qty = 1);
 	public function formatPrice($price);
 	public function clearBasket();
 }

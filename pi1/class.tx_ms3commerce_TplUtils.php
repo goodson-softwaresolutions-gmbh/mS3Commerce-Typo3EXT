@@ -303,8 +303,13 @@ class tx_ms3commerce_TplUtils {
 			</script>";
 	}
 	
+	/**
+	 * @deprecated include in typoscript for caching
+	 */
 	function getHtmlJSInclude( $forDynamic, tx_ms3commerce_template $template=null)
 	{
+		// include in typoscript for caching
+		return "";
 		$template = $this->template; //intellisense
 		$files = array();
 		switch ( $template->guiversion ) {

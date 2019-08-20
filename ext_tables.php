@@ -19,7 +19,7 @@ if (!defined('TYPO3_MODE')) {
 
 require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('ms3commerce').'/load_dataTransfer_config.php');
 
-$TCA['tt_content']['types']['list']['subtypes_excludelist'][$_EXTKEY.'_pi1']='layout,select_key,pages';
+$GLOBALS['TCA']['tt_content']['types']['list']['subtypes_excludelist'][$_EXTKEY.'_pi1']='layout,select_key,pages';
 
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPlugin(array(
     'LLL:EXT:ms3commerce/locallang_db.xml:tt_content.list_type_pi1',
@@ -28,11 +28,11 @@ $TCA['tt_content']['types']['list']['subtypes_excludelist'][$_EXTKEY.'_pi1']='la
 ),'list_type');
 
 // For flexforms
-$TCA['tt_content']['types']['list']['subtypes_addlist'][$_EXTKEY.'_pi1']='pi_flexform';
+$GLOBALS['TCA']['tt_content']['types']['list']['subtypes_addlist'][$_EXTKEY.'_pi1']='pi_flexform';
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPiFlexFormValue($_EXTKEY.'_pi1', 'FILE:EXT:'.$_EXTKEY . '/flexform_ds_pi1.xml');
 
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('fe_users', '--div--;mS3 Commerce,ms3commerce_user_rights'); 
-$TCA['fe_users']['columns']['ms3commerce_user_rights'] = array(
+$GLOBALS['TCA']['fe_users']['columns']['ms3commerce_user_rights'] = array(
 		'label'=>'mS3 Commerce User Rights',
 		'config'=>array(
 			'type'=>'input',
@@ -42,7 +42,7 @@ $TCA['fe_users']['columns']['ms3commerce_user_rights'] = array(
 
 if (defined('MS3C_ENABLE_OCI') && MS3C_ENABLE_OCI) {
 	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('fe_users', 'mS3C_oci_allow'); 
-	$TCA['fe_users']['columns']['mS3C_oci_allow'] = array(
+	$GLOBALS['TCA']['fe_users']['columns']['mS3C_oci_allow'] = array(
 		'label'=>'Allow OCI',
 		'config'=>array(
 			'type'=>'check'
@@ -51,7 +51,7 @@ if (defined('MS3C_ENABLE_OCI') && MS3C_ENABLE_OCI) {
 }
 
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('fe_groups', '--div--;mS3 Commerce,ms3commerce_group_rights'); 
-$TCA['fe_groups']['columns']['ms3commerce_group_rights'] = array(
+$GLOBALS['TCA']['fe_groups']['columns']['ms3commerce_group_rights'] = array(
 		'label'=>'mS3 Commerce Group Rights',
 		'config'=>array(
 			'type'=>'input',

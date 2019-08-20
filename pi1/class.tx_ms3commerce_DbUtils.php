@@ -171,7 +171,7 @@ class tx_ms3commerce_DbUtils {
 	 * @param BOOLEAN $numIndex
 	 * @return string result.
 	 */
-	function selectMenu_SingleRow($selectFields, $whereClause, $checkMarket = true) {
+	function selectMenu_SingleRow($selectFields, $whereClause, $checkMarket = true, $order = '') {
 		$db = $this->db;
 		// only the menu items in the current market will be returned
 		if ($this->marketId > 0 && $checkMarket) {
@@ -180,7 +180,7 @@ class tx_ms3commerce_DbUtils {
 			$whereClause .= sprintf('`MarketId` = %d', $this->marketId);
 		}
 
-		$res = $db->exec_SELECTquery($selectFields, "Menu", $whereClause, '', '', '1');
+		$res = $db->exec_SELECTquery($selectFields, "Menu", $whereClause, '', $order, '1');
 		if (!$res) {
 			$err = $db->sql_error();
 			if ($err != null)
@@ -640,7 +640,7 @@ class tx_ms3commerce_DbUtils {
 		$docId = array();
 
 		$res = $db->exec_SELECTquery("`DocumentId`", "DocumentLink", "`$valueDB`=$valueID", "", "`Sort`", $limit);
-		if (res) {
+		if ($res) {
 			while ($row = $db->sql_fetch_row($res)) {
 				$docId[] = $row[0];
 			}
@@ -1586,9 +1586,9 @@ class tx_ms3commerce_DbUtils_cached {
 		$featIds = $this->filterIDList($featIds, array_keys($this->dbcache[self::$dbc_f]));
 
 		$in = implode(',', $featIds);
-		$sql = 'SELECT *' .
+		$sql = 'SELECT * ' .
 				'FROM Feature f LEFT JOIN FeatureValue fv ON f.Id=fv.FeatureId ' .
-				"f.Id IN ($in) AND fv.LanguageId=$this->languageId;";
+				"WHERE f.Id IN ($in) AND fv.LanguageId=$this->languageId;";
 		$result = $this->db->sql_query($sql, "Feature f,FeatureValue fv");
 		if ($result) {
 			$newCache = array();

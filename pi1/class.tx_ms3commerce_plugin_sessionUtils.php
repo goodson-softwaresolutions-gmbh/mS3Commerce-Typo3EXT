@@ -13,6 +13,8 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
+use TYPO3\CMS\Core\TimeTracker\TimeTracker;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 // Sending mail might depend on this, for suppressor
 require_once('class.tx_ms3commerce_tt_products_mailer.php');
@@ -121,6 +123,13 @@ class tx_ms3commerce_plugin_sessionUtils {
 		if ($ok) {
 			//login successfull
 			$GLOBALS['TSFE']->fe_user->createUserSession($user);
+
+			//dirty solution for login
+			$reflection = new \ReflectionClass($GLOBALS['TSFE']->fe_user);
+			$setSessionCookie = $reflection->getMethod('setSessionCookie');
+			$setSessionCookie->setAccessible(true);
+			$setSessionCookie->invoke($GLOBALS['TSFE']->fe_user);
+			
 			$GLOBALS['TSFE']->fe_user->user = $GLOBALS['TSFE']->fe_user->fetchUserSession();
 			$GLOBALS['TSFE']->initUserGroups();
 
@@ -189,8 +198,11 @@ class tx_ms3commerce_timetracker {
 	var $tt_local_lvl = 0;
 
 	public function timeTrackStart($key) {
-		if (array_key_exists('TT', $GLOBALS))
+		if (array_key_exists('TT', $GLOBALS)) {
 			$GLOBALS['TT']->push($key);
+		} else {
+			$this->getTimeTracker()->push($key);
+		}
 		array_push($this->tt_local_stack, count($this->tt_local));
 		$this->tt_local[] = array($key, ++$this->tt_local_lvl, microtime(true));
 	}
@@ -201,6 +213,8 @@ class tx_ms3commerce_timetracker {
 		$this->tt_local_lvl--;
 		if (array_key_exists('TT', $GLOBALS))
 			$GLOBALS['TT']->pull();
+		else
+			$this->getTimeTracker()->pull();
 	}
 
 	public function timeTrackPrint() {
@@ -214,6 +228,13 @@ class tx_ms3commerce_timetracker {
 		return $str;
 	}
 
+    /**
+     * @return TimeTracker
+     */
+    protected function getTimeTracker()
+    {
+        return GeneralUtility::makeInstance(TimeTracker::class);
+    }
 }
 
 function dummy_output($s) {
