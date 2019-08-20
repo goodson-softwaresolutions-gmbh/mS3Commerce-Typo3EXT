@@ -153,8 +153,17 @@ class tx_ms3commerce_plugin_sessionUtils {
 		return false;
 	}
 
+	public static function isFeUserLoggedIn() {
+		if (MS3C_TYPO3_RELEASE == '9') {
+			$context = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Context\Context::class);
+			return $context->getPropertyFromAspect('frontend.user', 'isLoggedIn');
+		} else {
+			return $GLOBALS['TSFE']->loginUser;
+		}
+	}
+
 	public static function getUserId() {
-		if (isset($GLOBALS['TSFE']) && $GLOBALS['TSFE']->loginUser) {
+		if (self::isFeUserLoggedIn()) {
 			return $GLOBALS['TSFE']->fe_user->user['uid'];
 		}
 		return null;

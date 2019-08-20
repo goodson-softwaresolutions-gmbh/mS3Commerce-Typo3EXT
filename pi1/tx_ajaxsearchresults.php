@@ -163,7 +163,12 @@ class tx_ms3commerce_ajaxSearch {
 
 	static function standalone()
 	{
-		require_once(PATH_typo3conf.'/ext/ms3commerce/runtime_config.php');
+		if (MS3C_TYPO3_RELEASE == '9') {
+			require_once(\TYPO3\CMS\Core\Core\Environment::getPublicPath().'/typo3conf/ext/ms3commerce/runtime_config.php');
+		} else {
+			require_once(PATH_typo3conf.'/ext/ms3commerce/runtime_config.php');
+		}
+		
 		require_once('class.tx_ms3commerce_db.php');
 
 		require_once 'class.tx_ms3commerce_search.php';

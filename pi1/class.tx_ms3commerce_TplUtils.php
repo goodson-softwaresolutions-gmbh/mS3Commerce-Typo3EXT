@@ -36,7 +36,7 @@ class tx_ms3commerce_TplUtils {
 	 * @param type $marker
 	 * @return string|array 
 	 */
-	function getSubpart($content, $marker) 
+	static function getSubpart($content, $marker) 
 	{
 		$start = strpos($content, $marker);
 		if ($start===false)     { return ''; }
@@ -60,7 +60,7 @@ class tx_ms3commerce_TplUtils {
 		return $content;
 	} 
   
-	function trimExplode($delim, $string, $onlyNonEmptyValues=0)
+	static function trimExplode($delim, $string, $onlyNonEmptyValues=0)
 	{
 		// This explodes a comma-list into an array where the values are parsed through trim();
 		$temp = explode($delim,$string);
@@ -83,7 +83,7 @@ class tx_ms3commerce_TplUtils {
 	 * @param type $keepMarker (if the subpartmarker has to be kept)
 	 * @return type String 
 	 */
-  	function substituteSubpart($content,$marker,$subpartContent,$recursive=1,$keepMarker=0)
+  	static function substituteSubpart($content,$marker,$subpartContent,$recursive=1,$keepMarker=0)
 	{
 		$start = strpos($content, $marker);
 		if ($start===false)     { return $content; }
@@ -96,7 +96,7 @@ class tx_ms3commerce_TplUtils {
 		$between = substr($content, $startAM, $stop-$startAM);
 
 		if ($recursive) {
-			$after = $this->substituteSubpart($after, $marker, $subpartContent, $recursive, $keepMarker);
+			$after = self::substituteSubpart($after, $marker, $subpartContent, $recursive, $keepMarker);
 		}
 		
 		if ($keepMarker)        {
@@ -199,9 +199,9 @@ class tx_ms3commerce_TplUtils {
 	 * @param type $markContent
 	 * @return type 
 	 */
-	function substituteMarker($content, $marker, $markContent)
+	static function substituteMarker($content, $marker, $markContent)
 	{
-		return $this->template->plugin->substituteMarker($content, $marker, $markContent);
+		return str_replace($marker,$markContent,$content);
 	}
 	
 	/**
@@ -212,12 +212,12 @@ class tx_ms3commerce_TplUtils {
 	 * @param type $uppercase
 	 * @return type string 
 	 */ 
-	function substituteMarkerArray($content,$markContentArray,$wrap='',$uppercase=0)
+	static function substituteMarkerArray($content,$markContentArray,$wrap='',$uppercase=0)
 	{
 		if (is_array($markContentArray))        {
 			$markContentArray['###MS3C_HASH###'] = '###';
 			reset($markContentArray);
-			$wrapArr=$this->trimExplode('|',$wrap);
+			$wrapArr=self::trimExplode('|',$wrap);
 			while(list($marker,$markContent)=each($markContentArray))       {
 				if($uppercase)  $marker=strtoupper($marker);
 				if(strcmp($wrap,''))            $marker=$wrapArr[0].$marker.$wrapArr[1];

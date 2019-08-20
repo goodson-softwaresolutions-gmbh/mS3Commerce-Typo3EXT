@@ -361,7 +361,11 @@ class tx_ms3commerce_pi1 extends TYPO3\CMS\Frontend\Plugin\AbstractPlugin implem
 	
 	function getPluginRoot()
 	{
-		return \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::siteRelPath($this->extKey);
+		if (MS3C_TYPO3_RELEASE == '9') {
+			return \TYPO3\CMS\Core\Utility\PathUtility::stripPathSitePrefix(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath($this->extKey));
+		} else {
+			return \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::siteRelPath($this->extKey);
+		}
 	}
 
 	function loadSession($key)
@@ -385,7 +389,7 @@ class tx_ms3commerce_pi1 extends TYPO3\CMS\Frontend\Plugin\AbstractPlugin implem
 		if (empty($template)) {
 			return '';
 		}
-		return $this->cObj->getSubpart($template, $templateName);
+		return tx_ms3commerce_TplUtils::getSubpart($template, $templateName);
 	}
 
 	private static $s_filecache = array();
@@ -393,7 +397,7 @@ class tx_ms3commerce_pi1 extends TYPO3\CMS\Frontend\Plugin\AbstractPlugin implem
 		if (array_key_exists($file, self::$s_filecache)) {
 			return self::$s_filecache[$file];
 		}
-		$template = $this->cObj->fileResource($file);
+		$template = $this->fileResource($file);
 		if (empty($template))
 			return '';
 		
@@ -405,7 +409,7 @@ class tx_ms3commerce_pi1 extends TYPO3\CMS\Frontend\Plugin\AbstractPlugin implem
 				// $importFile[1] = Path
 				// $importFile[0] = Complete Marker
 				$content = $this->getTemplateFile($importFile[1]);
-				$template = $this->cObj->substituteMarker($template, $importFile[0], $content);
+				$template = tx_ms3commerce_TplUtils::substituteMarker($template, $importFile[0], $content);
 			}
 		}
 		
@@ -653,7 +657,7 @@ class tx_ms3commerce_pi1 extends TYPO3\CMS\Frontend\Plugin\AbstractPlugin implem
 	
 	function substituteMarker($content, $marker, $markContent)
 	{
-		return $this->cObj->substituteMarker($content, $marker, $markContent);
+		return tx_ms3commerce_TplUtils::substituteMarker($content, $marker, $markContent);
 	}
 	
 	/**
@@ -813,10 +817,10 @@ class tx_ms3commerce_pi1 extends TYPO3\CMS\Frontend\Plugin\AbstractPlugin implem
 	function checkGeneratedFileNeedsUpdate( $src, $dest )
 	{
 		$update = false;
-		if(false == file_exists(PATH_site . $dest))  {
+		if(false == file_exists(self::pathSite() . $dest))  {
 			$update = true;
 		} else {
-			if(filemtime(PATH_site . $dest) < filemtime(PATH_site . $src))
+			if(filemtime(self::pathSite() . $dest) < filemtime(self::pathSite() . $src))
 				$update = true;
 		}
 		
@@ -834,12 +838,12 @@ class tx_ms3commerce_pi1 extends TYPO3\CMS\Frontend\Plugin\AbstractPlugin implem
 	{
 		// Create dirs and move/copy file from temp to dest
 		$paths = dirname($dest);
-		TYPO3\CMS\Core\Utility\GeneralUtility::mkdir_deep(PATH_site, $paths);
+		TYPO3\CMS\Core\Utility\GeneralUtility::mkdir_deep(self::pathSite(), $paths);
 
 		if ($copy) {
-			$ok = copy(PATH_site . $src, PATH_site . $dest);
+			$ok = copy(self::pathSite() . $src, self::pathSite() . $dest);
 		} else {
-			$ok = rename(PATH_site . $src, PATH_site . $dest);
+			$ok = rename(self::pathSite() . $src, self::pathSite() . $dest);
 		}
 		
 		return $ok;
@@ -853,8 +857,8 @@ class tx_ms3commerce_pi1 extends TYPO3\CMS\Frontend\Plugin\AbstractPlugin implem
 			$this->gr->init();
 		}
 		
-		$sourceFull = PATH_site . $source;
-		$destFull = PATH_site . $dest;
+		$sourceFull = self::pathSite() . $source;
+		$destFull = self::pathSite() . $dest;
 		
 		// Check if picture $source date is new than $dest date
 		
@@ -878,8 +882,8 @@ class tx_ms3commerce_pi1 extends TYPO3\CMS\Frontend\Plugin\AbstractPlugin implem
 				// But if source has correct dimensions, no new file is created.
 				// In that case we have to copy the originial, not move the temp!
 				$tmpFile = $res[3];
-				if (strstr($tmpFile, PATH_site)) {
-					$tmpFile = substr($tmpFile, strlen(PATH_site));
+				if (strstr($tmpFile, self::pathSite())) {
+					$tmpFile = substr($tmpFile, strlen(self::pathSite()));
 				}
 				if ($tmpFile == $source) {
 					$needCopy = true;
@@ -950,15 +954,20 @@ class tx_ms3commerce_pi1 extends TYPO3\CMS\Frontend\Plugin\AbstractPlugin implem
 
 	function fileResource( $path )
 	{
-		return $this->cObj->fileResource( $path );
+		if (MS3C_TYPO3_RELEASE == '9') {
+			$path = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Frontend\Resource\FilePathSanitizer::class)->sanitize($path);
+			return file_get_contents($path);
+		} else {
+			return $this->cObj->fileResource( $path );
+		}
 	}
-	
 	
 	function getUserRights()
 	{
 		$urights=array();
 		$grights=array();
-		if ($GLOBALS['TSFE']->loginUser) {
+
+		if ($this->isUserLoggedIn()) {
 			$uid=$GLOBALS['TSFE']->fe_user->user['uid']; 
 			$gruid=$GLOBALS['TSFE']->fe_user->groupData['uid'];
 			$t3db = tx_ms3commerce_db_factory_cms::getT3Database();
@@ -984,7 +993,12 @@ class tx_ms3commerce_pi1 extends TYPO3\CMS\Frontend\Plugin\AbstractPlugin implem
 
 		$rightsArray = array_filter($rightsArray, "removeEmpty");
 		return $rightsArray;	
-	}		
+	}
+
+	public function isUserLoggedIn()
+	{
+		return tx_ms3commerce_plugin_sessionUtils::isFeUserLoggedIn();
+	}
 
 	public function page404Error( $msg )
 	{
@@ -1034,6 +1048,14 @@ class tx_ms3commerce_pi1 extends TYPO3\CMS\Frontend\Plugin\AbstractPlugin implem
 	}
 	public function timeTrackPrint() {
 		$this->timetracker->timeTrackPrint();
+	}
+
+	public static function pathSite() {
+		if (MS3C_TYPO3_RELEASE == '9') {
+			return \TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/';
+		} else {
+			return PATH_site;
+		}	
 	}
 }
 	/*

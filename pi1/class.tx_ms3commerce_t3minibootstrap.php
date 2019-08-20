@@ -33,7 +33,7 @@ if (MS3C_TYPO3_RELEASE == '7' || MS3C_TYPO3_RELEASE == '8')
 			if (!defined('TYPO3_MODE')) {
 				define('TYPO3_MODE', 'FE');
 			}
-			if(MS3C_TYPO3_RELEASE == '8') {
+			if(MS3C_TYPO3_RELEASE == '8' || MS3C_TYPO3_RELEASE == '9') {
                 if (!defined('TYPO3_REQUESTTYPE')) {
                     define('TYPO3_REQUESTTYPE', 1);
                 }
@@ -166,14 +166,24 @@ class tx_ms3commerce_t3minibootstrap extends tx_ms3commerce_t3minibootstrap_base
 			return true;
 		}
 
+		
+		if (MS3C_TYPO3_RELEASE == '9') {
+			$loadedExts = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Package\PackageManager)->getActivePackages();
+		} else {
+			$loadedExts = $GLOBALS['TYPO3_LOADED_EXT'];
+		}
 		// Is extension loaded?
-		if (!array_key_exists($extName, $GLOBALS['TYPO3_LOADED_EXT'])) {
+		if (!array_key_exists($extName, $loadedExts)) {
 			return false;
 		}
 
-		$conf = $GLOBALS['TYPO3_LOADED_EXT'][$extName];
+		$conf = $loadedExts[$extName];
 		$_EXTKEY = $extName;
-		$_EXTCONF = $GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$_EXTKEY];
+		if (MS3C_TYPO3_RELEASE == '9') {
+			$_EXTCONF = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\ExtensionConfiguration::class)->get($_EXTKEY);
+		} else {
+			$_EXTCONF = $GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$_EXTKEY];
+		}
 
 		if (array_key_exists('ext_localconf.php', $conf)) {
 			// some exts might depend on a global TYPO3_CONF_VARS

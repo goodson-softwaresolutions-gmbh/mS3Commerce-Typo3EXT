@@ -183,7 +183,7 @@ if ( defined('MS3C_ENABLE_OCI') && MS3C_ENABLE_OCI ) {
 		}
 
 		public function allowOCI() {
-			if ($GLOBALS['TSFE'] && $GLOBALS['TSFE']->loginUser) {
+			if (tx_ms3commerce_plugin_sessionUtils::isFeUserLoggedIn()) {
 				$allow = $GLOBALS['TSFE']->fe_user->user['mS3C_oci_allow'];
 				if ($allow == 1) {
 					return true;

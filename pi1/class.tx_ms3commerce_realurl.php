@@ -359,7 +359,8 @@ class tx_ms3commerce_realurl_simple extends tx_ms3commerce_realurl
 			return "?id=$pid&L=$lang".$params;
 		}
 		if (!is_array($params)) {
-			$params = TYPO3\CMS\Core\Utility\GeneralUtility::explodeUrl2Array($params, true);
+			//$params = \TYPO3\CMS\Core\Utility\GeneralUtility::explodeUrl2Array($params, true);
+			parse_str($params, $params);
 		}
 		
 		// Extract L and convert to prevar
@@ -565,7 +566,12 @@ class tx_ms3commerce_realurl_simple extends tx_ms3commerce_realurl
 
 		// Convert to lowercase:
 		//$processedTitle = $GLOBALS['TSFE']->csConvObj->conv_case($charset, $title, 'toLower');
-		$processedTitle = self::$csConvObj->conv_case($charset, $title, 'toLower');
+		if (MS3C_TYPO3_RELEASE == '9') {
+			$processedTitle = mb_strtolower($title, $charset);
+		} else {
+			$processedTitle = self::$csConvObj->conv_case($charset, $title, 'toLower');
+		}
+		
 
 		// Strip tags
 		$processedTitle = strip_tags($processedTitle);

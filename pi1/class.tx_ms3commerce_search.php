@@ -639,7 +639,7 @@ class tx_ms3commerce_search implements itx_ms3commerce_pagetypehandler {
 		$out->time = $time2 - $time;
 		$out->t1 = $time;
 		$out->t2 = $time2;
-		$out->sql = $GLOBALS["sqlDebug"];
+		//$out->sql = $GLOBALS["sqlDebug"];
 		$this->timetracker->timeTrackStop();
 		return $out;
 	}

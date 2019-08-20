@@ -33,12 +33,29 @@ class tx_ms3commerce_pi1_wizicon {
 	function proc($wizardItems)	{
 		$LL = $this->includeLocalLang();
 
-		$wizardItems['plugins_tx_ms3commerce_pi1'] = array(
-			'icon'=>\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('ms3commerce').'pi1/ce_wiz.gif',
-			'title'=>$GLOBALS['LANG']->getLLL('pi1_title', $LL),
-			'description'=>$GLOBALS['LANG']->getLLL('pi1_plus_wiz_description',$LL),
-			'params'=>'&defVals[tt_content][CType]=list&defVals[tt_content][list_type]=ms3commerce_pi1'
-		);
+		if (MS3C_TYPO3_RELEASE == '9') {
+			$iconRegistry = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
+				\TYPO3\CMS\Core\Imaging\IconRegistry::class
+			 );
+			 $iconRegistry->registerIcon(
+				'ms3commerce_p1_icon',
+				\TYPO3\CMS\Core\Imaging\IconProvider\BitmapIconProvider::class,
+				['source' => 'EXT:ms3commerce/pi1/ce_wiz.gif']
+			 );
+			$wizardItems['plugins_tx_ms3commerce_pi1'] = array(
+				'iconIdentifier'=>'ms3commerce_p1_icon',
+				'title'=>$GLOBALS['LANG']->getLLL('pi1_title', $LL),
+				'description'=>$GLOBALS['LANG']->getLLL('pi1_plus_wiz_description', $LL),
+				'params'=>'&defVals[tt_content][CType]=list&defVals[tt_content][list_type]=ms3commerce_pi1'
+			);
+		} else {
+			$wizardItems['plugins_tx_ms3commerce_pi1'] = array(
+				'icon'=>\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('ms3commerce').'pi1/ce_wiz.gif',
+				'title'=>$GLOBALS['LANG']->getLLL('pi1_title', $LL),
+				'description'=>$GLOBALS['LANG']->getLLL('pi1_plus_wiz_description',$LL),
+				'params'=>'&defVals[tt_content][CType]=list&defVals[tt_content][list_type]=ms3commerce_pi1'
+			);
+		}
 		
 		return $wizardItems;
 	}

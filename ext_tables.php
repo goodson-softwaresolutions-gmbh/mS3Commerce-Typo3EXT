@@ -24,8 +24,8 @@ $GLOBALS['TCA']['tt_content']['types']['list']['subtypes_excludelist'][$_EXTKEY.
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPlugin(array(
     'LLL:EXT:ms3commerce/locallang_db.xml:tt_content.list_type_pi1',
     $_EXTKEY . '_pi1',
-    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($_EXTKEY) . 'ext_icon.gif'
-),'list_type');
+    "EXT:$_EXTKEY/ext_icon.gif"
+),'list_type', $_EXTKEY);
 
 // For flexforms
 $GLOBALS['TCA']['tt_content']['types']['list']['subtypes_addlist'][$_EXTKEY.'_pi1']='pi_flexform';

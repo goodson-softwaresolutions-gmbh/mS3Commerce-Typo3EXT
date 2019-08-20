@@ -47,7 +47,12 @@ class user_tx_ms3commerce_tt_products_mail_suppressor {
 
 }
 
-@include_once(PATH_typo3 . 'contrib/swiftmailer/swift_required.php');
+if (MS3C_TYPO3_RELEASE == '9') {
+	@include_once(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3/contrib/swiftmailer/swift_required.php');
+} else {
+	@include_once(PATH_typo3 . 'contrib/swiftmailer/swift_required.php');
+}
+
 
 if (interface_exists('Swift_Events_SendListener')) {
 

@@ -51,9 +51,9 @@ class tx_ms3commerce_tt_products implements itx_ms3commerce_shop {
 		$this->calc = new tx_ms3commerce_shop_calc($this->template->db, $this->template->conf['shop_market'], $this->template->conf, $this->template->marketId, $this->template->languageId, false, $this->template->plugin->linker);
 		$this->custom = &$this->calc->custom;
 		require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('static_info_tables') . 'pi1/class.tx_staticinfotables_pi1.php');
-		//Mithilfe dieser Funktion kÃ¶nnen lÃ¤nderspeziefische Preisanzeigen gemacht werden
+		//Mithilfe dieser Funktion können länderspeziefische Preisanzeigen gemacht werden
 		//Wird momentan nicht verwendet
-		$staticInfoObj = TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj('SJBR\StaticInfoTables\PiBaseApi');
+		$staticInfoObj = TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('SJBR\StaticInfoTables\PiBaseApi');
 		if ($staticInfoObj->needsInit()) {
 			$staticInfoObj->init();
 		}
@@ -551,12 +551,12 @@ class tx_ms3commerce_shop_calc {
 	}
 
 	function getBasketPrices() {
-		$basket = &TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj('tx_ttproducts_basket');
+		$basket = &TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tx_ttproducts_basket');
 		return $basket->calculatedArray;
 	}
 
 	function clearBasket() {
-		$basket = &TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj('tx_ttproducts_basket');
+		$basket = &TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tx_ttproducts_basket');
 		$basket->clearBasket(true);
 	}
 
@@ -767,7 +767,7 @@ class tx_ms3commerce_shop_calc {
 	 * @return Benutzerrechte 
 	 */
 	function getUserRights() {
-		if ($GLOBALS['TSFE']->loginUser) {
+		if ($this->template->plugin->isUserLoggedIn()) {
 			$rights = $GLOBALS['TSFE']->fe_user->user['ms3commerce_user_rights'];
 			$urights = explode(";", $rights);
 			return $urights;
@@ -834,7 +834,7 @@ class tx_ms3commerce_shop_calc {
 	}
 
 	function getVariantRowFromArticle($artUid) {
-		$variant = TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj('&tx_ttproducts_variant');
+		$variant = TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('&tx_ttproducts_variant');
 		if (!$variant->getUseArticles()) {
 			return null;
 		}
@@ -1089,7 +1089,7 @@ class tx_tt_products_hooks {
 	function __construct() {
 		$this->db = tx_ms3commerce_db_factory::buildDatabase(true);
 		//tt_products Conf auslesen
-		$cnf = &TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj('&tx_ttproducts_config');
+		$cnf = &TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('&tx_ttproducts_config');
 		$this->ttconf = $cnf->conf;
 		$this->conf = &$cnf->conf['mS3Commerce.'];
 		$this->calc = new tx_ms3commerce_shop_calc($this->db, $this->conf['shop_market'], $this->conf, $this->conf['market_id'], $this->conf['language_id'], true, $this->getLinker());
@@ -1263,7 +1263,7 @@ class tx_tt_products_hooks {
 	 */
 	private function getItemMarker(&$markerArray, $row) {
 		$this->dbgstart();
-		$priceViewObj = &TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj('tx_ttproducts_field_price_view');
+		$priceViewObj = &TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tx_ttproducts_field_price_view');
 		$uid = $markerArray['###PRODUCT_UID###'];
 		$ms3Oid = $this->calc->getMs3OidForTTUid($uid);
 		$pid = $this->calc->getProdIdForMs3Oid($ms3Oid);
@@ -1320,8 +1320,8 @@ class tx_tt_products_hooks {
 
 			if (defined('MS3C_ENABLE_OCI') && MS3C_ENABLE_OCI) {
 				// Get the tt_products main object (to get its cObj)
-				$ttProdTemplate = TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj("&tx_ttproducts_template");
-				$ttProdMain = TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj("&tx_ttproducts_main");
+				$ttProdTemplate = TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance("&tx_ttproducts_template");
+				$ttProdMain = TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance("&tx_ttproducts_main");
 				if (method_exists($ttProdMain, "getTemplateCode")) {
 					$tmpl = $ttProdMain->getTemplateCode('BASKET');
 				} else {
@@ -1444,7 +1444,7 @@ class tx_tt_products_hooks {
 class tx_tt_products_hooks_proxy {
 
 	function __construct() {
-		$hook = &TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj('tx_tt_products_hooks');
+		$hook = &TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tx_tt_products_hooks');
 		$hook->init();
 	}
 
