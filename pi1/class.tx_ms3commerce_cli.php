@@ -13,7 +13,7 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
-if (!defined ('TYPO3_cliMode')) 	die ('Access denied: CLI only.');
+if (!defined ('TYPO3_cliMode') && !defined('TYPO3_REQUESTTYPE_CLI')) 	die ('Access denied: CLI only.');
 
 require_once(__DIR__.'/../load_dataTransfer_config.php');
 

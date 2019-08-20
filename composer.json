@@ -9,7 +9,7 @@
         }
     ],
     "require": {
-        "typo3/cms-core": ">=6,<8",
+        "typo3/cms-core": ">=6,<9",
         "php": ">=5.4.0",
         "ms3commerce/dataTransfer": "6.2.*"
     }

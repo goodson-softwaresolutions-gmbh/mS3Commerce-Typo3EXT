@@ -14,7 +14,7 @@
  *  This copyright notice MUST APPEAR in all copies of the script!
  * ************************************************************* */
 
-if (MS3C_TYPO3_RELEASE == '7')
+if (MS3C_TYPO3_RELEASE == '7' || MS3C_TYPO3_RELEASE == '8')
 {
 	$t3Path = rtrim(realpath(__DIR__ . '/../../../../typo3'), '\\/');
 	$classLoader = require $t3Path . '/../vendor/autoload.php';
@@ -33,6 +33,14 @@ if (MS3C_TYPO3_RELEASE == '7')
 			if (!defined('TYPO3_MODE')) {
 				define('TYPO3_MODE', 'FE');
 			}
+			if(MS3C_TYPO3_RELEASE == '8') {
+                if (!defined('TYPO3_REQUESTTYPE')) {
+                    define('TYPO3_REQUESTTYPE', 1);
+                }
+                if (!defined('PATH_thisScript')) {
+                    define('PATH_thisScript', $_SERVER['SCRIPT_FILENAME']);
+                }
+            }
 			
 			parent::getInstance()
 				->initializeClassLoader(self::$classLoader)
