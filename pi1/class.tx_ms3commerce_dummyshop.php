@@ -44,7 +44,7 @@ class tx_ms3commerce_dummyshop implements itx_ms3commerce_shop {
 		
 	}
 
-	public function getPrice($asimOid, $qty = 1) {
+	public function getPrice($mS3Oid, $qty = 1) {
 		
 	}
 

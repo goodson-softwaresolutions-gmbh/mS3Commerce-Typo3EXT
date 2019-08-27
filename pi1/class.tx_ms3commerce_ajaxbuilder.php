@@ -794,7 +794,11 @@ class tx_ms3commerce_ajaxbuilder
 		//check if consolidatedResults are needed
 		if($this->template->conf['consolidateSearchResults'])
 		{
-			$result=$this->template->search->consolidateResults($result, $this->template->searchMenuIds);
+			if ($this->template->conf['consolidateSearchResults'] == 'parent') {
+                $result = $this->template->search->consolidateResultsParent($result);
+            } else {
+                $result = $this->template->search->consolidateResults($result, $this->template->searchMenuIds);
+            }
 		}
 		return $result;
 	}

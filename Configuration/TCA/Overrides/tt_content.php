@@ -19,8 +19,15 @@ if (!defined('TYPO3_MODE')) {
 
 require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('ms3commerce').'/load_dataTransfer_config.php');
 
-if (TYPO3_MODE == 'BE') {
-    $TBE_MODULES_EXT['xMOD_db_new_content_el']['addElClasses']['tx_ms3commerce_pi1_wizicon'] = \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath($_EXTKEY).'pi1/class.tx_ms3commerce_pi1_wizicon.php';
-}
+$GLOBALS['TCA']['tt_content']['types']['list']['subtypes_excludelist']['ms3commerce_pi1']='layout,select_key,pages';
 
-?>
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPlugin(array(
+    'LLL:EXT:ms3commerce/locallang_db.xml:tt_content.list_type_pi1',
+    'ms3commerce_pi1',
+    'EXT:ms3commerce/ext_icon.gif'
+),'list_type', 'ms3commerce');
+
+
+// For flexforms
+$GLOBALS['TCA']['tt_content']['types']['list']['subtypes_addlist']['ms3commerce_pi1']='pi_flexform';
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPiFlexFormValue('ms3commerce_pi1', 'FILE:EXT:ms3commerce/flexform_ds_pi1.xml');

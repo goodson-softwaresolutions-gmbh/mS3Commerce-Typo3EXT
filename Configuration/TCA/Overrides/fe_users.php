@@ -19,8 +19,22 @@ if (!defined('TYPO3_MODE')) {
 
 require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('ms3commerce').'/load_dataTransfer_config.php');
 
-if (TYPO3_MODE == 'BE') {
-    $TBE_MODULES_EXT['xMOD_db_new_content_el']['addElClasses']['tx_ms3commerce_pi1_wizicon'] = \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath($_EXTKEY).'pi1/class.tx_ms3commerce_pi1_wizicon.php';
-}
 
-?>
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('fe_users', '--div--;mS3 Commerce,ms3commerce_user_rights'); 
+$GLOBALS['TCA']['fe_users']['columns']['ms3commerce_user_rights'] = array(
+		'label'=>'mS3 Commerce User Rights',
+		'config'=>array(
+			'type'=>'input',
+			'size'=>'80',
+			'max'=>'80')
+		);
+
+if (defined('MS3C_ENABLE_OCI') && MS3C_ENABLE_OCI) {
+	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('fe_users', 'mS3C_oci_allow'); 
+	$GLOBALS['TCA']['fe_users']['columns']['mS3C_oci_allow'] = array(
+		'label'=>'Allow OCI',
+		'config'=>array(
+			'type'=>'check'
+			)
+		);
+}

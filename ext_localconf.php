@@ -56,9 +56,11 @@ $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks']['tx_ms3commerce_
 */
 
 if (TYPO3_MODE == 'BE') {
-	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['GLOBAL']['cliKeys'][$_EXTKEY] = array('EXT:'.$_EXTKEY.'/pi1/class.tx_ms3commerce_cli.php','_CLI_scheduler');
+	if (MS3C_TYPO3_RELEASE == '9') {
+		// TODO: Register symphony commands for cli
+	} else {
+		$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['GLOBAL']['cliKeys'][$_EXTKEY] = array('EXT:'.$_EXTKEY.'/pi1/class.tx_ms3commerce_cli.php','_CLI_scheduler');
+	}
 }
-
-require(PATH_site.'dataTransfer/runtime_config.php');
 
 ?>

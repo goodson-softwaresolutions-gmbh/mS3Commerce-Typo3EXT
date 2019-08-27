@@ -33,17 +33,17 @@ class tx_ms3commerce_custom_shop implements itx_ms3commerce_custom_shop {
 		
 	}
 	
-	public function getPrice($AsimOid, $forQty, $qty, $markt, $userper, $variant = null)
+	public function getPrice($ms3Oid, $forQty, $qty, $markt, $userper, $variant = null)
 	{
 		return null;
 	}
 	
-	public function getMinQuantityForPrice($AsimOid, $forQty, $variant = null)
+	public function getMinQuantityForPrice($ms3Oid, $forQty, $variant = null)
 	{
 		return null;
 	}
 	
-	public function getAvailability($AsimOid)
+	public function getAvailability($ms3Oid)
 	{
 		return null;
 	}
@@ -63,7 +63,7 @@ class tx_ms3commerce_custom_shop implements itx_ms3commerce_custom_shop {
 		return $basket;
 	}
 	
-	public function getNotReducedPrice($AsimOid, $qty, $markt, $userperm)
+	public function getNotReducedPrice($ms3Oid, $qty, $markt, $userperm)
 	{
 		return null;
 	}
@@ -84,11 +84,11 @@ class tx_ms3commerce_custom_shop implements itx_ms3commerce_custom_shop {
 		return null;
 	}
 
-	public function fillShopMarkerContent($marker,$productId,$asimOid,$ttUid,$basket = null) {
+	public function fillShopMarkerContent($marker,$productId,$ms3Oid,$ttUid,$basket = null) {
 		return null;
 	}
 
-	public function getItemMarker($productId, $asimOid, $ttUid, $item=null) {
+	public function getItemMarker($productId, $ms3Oid, $ttUid, $item=null) {
 		return null;
 	}
 
@@ -107,7 +107,7 @@ class tx_ms3commerce_custom_shop implements itx_ms3commerce_custom_shop {
 	public function addGlobalMarkers(&$markerArray, $existingMarkers) {
 	}
 
-	public function getOCIMapping($asimOid, $quantity, $varLine) {
+	public function getOCIMapping($ms3Oid, $quantity, $varLine) {
 		return array();
 	}
 	

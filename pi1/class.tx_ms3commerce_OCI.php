@@ -78,11 +78,11 @@ if ( defined('MS3C_ENABLE_OCI') && MS3C_ENABLE_OCI ) {
 						// must parse through custom...
 						$item = $template->shop->custom->getItemArrayForOCIRequest(TYPO3\CMS\Core\Utility\GeneralUtility::_GP('PRODUCTID'), 0);
 						if ($item) {
-							$asimOid = $item['asimOid'];
+							$ms3Oid = $item['asimOid'];
 						} else {
-							$asimOid = TYPO3\CMS\Core\Utility\GeneralUtility::_GP('PRODUCTID');
+							$ms3Oid = TYPO3\CMS\Core\Utility\GeneralUtility::_GP('PRODUCTID');
 						}
-						$prodId = $template->dbutils->getProductIdByOid($asimOid);
+						$prodId = $template->dbutils->getProductIdByOid($ms3Oid);
 						$template->plugin->logoutUser();
 						$template->plugin->pageRedirect($template->plugin->getProductLink($prodId));
 						break;
@@ -183,7 +183,7 @@ if ( defined('MS3C_ENABLE_OCI') && MS3C_ENABLE_OCI ) {
 		}
 
 		public function allowOCI() {
-			if ($GLOBALS['TSFE'] && $GLOBALS['TSFE']->loginUser) {
+			if (tx_ms3commerce_plugin_sessionUtils::isFeUserLoggedIn()) {
 				$allow = $GLOBALS['TSFE']->fe_user->user['mS3C_oci_allow'];
 				if ($allow == 1) {
 					return true;
@@ -208,14 +208,9 @@ if ( defined('MS3C_ENABLE_OCI') && MS3C_ENABLE_OCI ) {
 
 			$OCIForm = $this->generateForm('basket', $ociFormFields);
 			echo $OCIForm;
-			
-			/*
-			$fd = fopen(MS3C_ROOT.'/dataTransfer/data/OCIAccess.log', 'a');
-			fputs($fd,$OCIForm);
-			fputs($fd,'-----------------------');
-			fclose($fd);
-			unset($fd);
-			*/
+
+			$GLOBALS['TSFE']->fe_user->setKey('user', 'basket', array());
+			$GLOBALS['TSFE']->fe_user->storeSessionData();
 			
 			tx_ms3commerce_plugin_sessionUtils::suppressOutput();
 			tx_ms3commerce_plugin_sessionUtils::logoutUser();
@@ -311,8 +306,9 @@ if ( defined('MS3C_ENABLE_OCI') && MS3C_ENABLE_OCI ) {
 
 			if ($formType == 'basket') {
 				//if is a Basket the url is stored in the session
-				$hookURL = $GLOBALS['TSFE']->fe_user->sesData['tx_ms3commerce_OCI']['HOOK_URL'];
-				$target = $GLOBALS['TSFE']->fe_user->sesData['tx_ms3commerce_OCI']['TARGET'];
+				$ociSession = $GLOBALS['TSFE']->fe_user->getKey('ses', 'tx_ms3commerce_OCI');
+				$hookURL = $ociSession['HOOK_URL'];
+				$target = $ociSession['TARGET'];
 			} else {
 				//otherwise they are in $_POST
 				$hookURL = TYPO3\CMS\Core\Utility\GeneralUtility::_GP('HOOK_URL');

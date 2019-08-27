@@ -85,7 +85,7 @@ if (MS3C_DB_BACKEND == 'mysqli') {
 }
 
 /**
- * Wraps Typo3 database in tx_asimcommece_db interface.
+ * Wraps Typo3 database in tx_ms3commece_db interface.
  * Works on a Typo3 db (t3lib_db)
  */
 class tx_ms3commerce_db_typo3 extends tx_ms3commerce_db
@@ -228,7 +228,7 @@ class tx_ms3commerce_db_typo3_logged extends tx_ms3commerce_db_typo3
 }
 
 /**
- * Factory building asim commerce db handlers 
+ * Factory building mS3 commerce db handlers 
  */
 class tx_ms3commerce_db_factory_cms
 {
@@ -304,7 +304,7 @@ class tx_ms3commerce_db_factory_cms
 		if (self::$t3db) {
 			return self::$t3db;
 		}
-		if (self::isTypo3()) {
+		if (self::isTypo3() && isset($GLOBALS['TYPO3_DB'])) {
 			if (array_key_exists('ms3debugdb', $_GET) && $_GET['ms3debugdb']) {
 				self::$t3db = new tx_ms3commerce_db_typo3_logged( $GLOBALS['TYPO3_DB'] );
 			} else {
@@ -343,11 +343,18 @@ class tx_ms3commerce_db_factory_cms
 	{
 		$conf = @include(MS3C_EXT_ROOT . '/typo3conf/LocalConfiguration.php');
 		
-		$typo_db_username = $conf['DB']['username'];
-		$typo_db_host = $conf['DB']['host'];
-		$typo_db = $conf['DB']['database'];
-		$typo_db_password = $conf['DB']['password'];
-		
+		if (MS3_TYPO3_RELEASE == '8') {
+			$typo_db_username = $conf['DB']['Connections']['Default']['user'];
+			$typo_db_host = $conf['DB']['Connections']['Default']['host'];
+			$typo_db = $conf['DB']['Connections']['Default']['dbname'];
+			$typo_db_password = $conf['DB']['Connections']['Default']['password'];
+		} else {
+			$typo_db_username = $conf['DB']['username'];
+			$typo_db_host = $conf['DB']['host'];
+			$typo_db = $conf['DB']['database'];
+			$typo_db_password = $conf['DB']['password'];
+		}
+
 		return array($typo_db_username, $typo_db_host, $typo_db, $typo_db_password);
 	}
 }
