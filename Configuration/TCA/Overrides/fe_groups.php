@@ -17,10 +17,11 @@ if (!defined('TYPO3_MODE')) {
     die ('Access denied.');
 }
 
-require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('ms3commerce').'/load_dataTransfer_config.php');
-
-if (TYPO3_MODE == 'BE') {
-    $TBE_MODULES_EXT['xMOD_db_new_content_el']['addElClasses']['tx_ms3commerce_pi1_wizicon'] = \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath($_EXTKEY).'pi1/class.tx_ms3commerce_pi1_wizicon.php';
-}
-
-?>
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('fe_groups', '--div--;mS3 Commerce,ms3commerce_group_rights'); 
+$GLOBALS['TCA']['fe_groups']['columns']['ms3commerce_group_rights'] = array(
+		'label'=>'mS3 Commerce Group Rights',
+		'config'=>array(
+			'type'=>'input',
+			'size'=>'80',
+			'max'=>'80')
+        );

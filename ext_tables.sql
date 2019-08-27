@@ -2,10 +2,6 @@ CREATE TABLE `fe_users` (
 	`ms3commerce_user_rights` VARCHAR(80)
 );
 
-/*CREATE TABLE `fe_users` (
-	`mS3C_oci_allow` TINYINT DEFAULT 0
-);*/
-
 CREATE TABLE `fe_groups` (
 	`ms3commerce_group_rights` VARCHAR(80)
 );
@@ -21,6 +17,12 @@ CREATE TABLE `tt_products_stage` (
 	 `AsimOid` char(36) NOT NULL,
 	 `title` TINYTEXT NOT NULL
 );
+
+/*
+-- Needed if OCI is enabled
+CREATE TABLE `fe_users` (
+	`mS3C_oci_allow` TINYINT DEFAULT 0
+);*/
 
 /*
 -- Needed if MS3C_SHOP_USE_ORDER_BILLING_ADDRESS == true
