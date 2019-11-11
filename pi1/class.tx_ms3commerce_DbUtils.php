@@ -294,7 +294,7 @@ class tx_ms3commerce_DbUtils {
 		//$res = $this->db->sql_query("CALL getChildGroups($parentGroupId,$this->marketId,$limit)");
 
 		$res = $db->exec_SELECTquery(
-				"`GroupId`", "GroupChildGroups", "`parentGroupId` = $parentGroupId ", "", "`Sort`", $limit
+				"m2.`GroupId`", "Menu m1, Menu m2", "m1.Id = m2.ParentId AND m1.GroupId = $parentGroupId AND m2.`GroupId` IS NOT NULL", "", "m2.Ordinal", $limit
 		);
 		if ($res) {
 			while ($row = $db->sql_fetch_row($res))
