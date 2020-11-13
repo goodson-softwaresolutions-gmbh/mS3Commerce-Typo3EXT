@@ -947,7 +947,7 @@ class tx_ms3commerce_template
 		$productCount = 0;
 		$templateProduct = $this->tplutils->getSubpart($templateContent, '###PRODUCT###');
 		if (!empty($templateProduct)) {
-			$allprods=$this->dbutils->getChildProducts($groupId);
+			$allprods=$this->dbutils->getChildProducts($groupId,'', $parentMenuId);
 			array_walk($allprods, "getSubIndex", 0);
 			$this->dbutils->preloadProducts($allprods);
 			$visibleProdArray=$this->tplutils->filterProductVisibilityList($allprods);
@@ -958,7 +958,7 @@ class tx_ms3commerce_template
 		$groupCount = 0;
 		$templateProductGroup = $this->tplutils->getSubpart($templateContent, $this->getGroupSubpartName());
 		if (!empty($templateProductGroup)) {
-			$allgrups=$this->dbutils->getChildGroups($groupId);
+			$allgrups=$this->dbutils->getChildGroups($groupId, '', $parentMenuId);
 			$this->dbutils->preloadGroups($allgrups);
 			$visibleGroupArray=$this->tplutils->filterGroupVisibilityList($allgrups);
 			$this->dbutils->preloadGroupMenus($visibleGroupArray, $parentMenuId);
@@ -968,7 +968,7 @@ class tx_ms3commerce_template
 		$documentCount = 0;
 		$templateDocument = $this->tplutils->getSubpart($templateContent, $this->getListDocumentContentSubpartName());
 		if (!empty($templateDocument)) {
-			$alldocs=$this->dbutils->getChildDocument($groupId);
+			$alldocs=$this->dbutils->getChildDocument($groupId, '', $parentMenuId);
 			array_walk($alldocs, "getSubIndex", 0);
 			$this->dbutils->preloadDocuments($alldocs);
 			$visibleDocArray=$this->tplutils->filterDocumentVisibilityList($alldocs);

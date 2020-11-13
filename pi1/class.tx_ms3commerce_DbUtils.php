@@ -288,13 +288,14 @@ class tx_ms3commerce_DbUtils {
 		return $row;
 	}
 
-	function getChildGroups($parentGroupId, $limit = '') {
+	function getChildGroups($parentGroupId, $limit = '', $menuId = 0) {
+		if (!$menuId) $menuId = $this->getGroupMenuId($parentGroupId);
 		$db = $this->db;
 		$groupArray = array();
 		//$res = $this->db->sql_query("CALL getChildGroups($parentGroupId,$this->marketId,$limit)");
 
 		$res = $db->exec_SELECTquery(
-				"m2.`GroupId`", "Menu m1, Menu m2", "m1.Id = m2.ParentId AND m1.GroupId = $parentGroupId AND m2.`GroupId` IS NOT NULL", "", "m2.Ordinal", $limit
+				"m2.`GroupId`", "Menu m1, Menu m2", "m1.Id = m2.ParentId AND m1.Id = $menuId AND m2.`GroupId` IS NOT NULL", "", "m2.Ordinal", $limit
 		);
 		if ($res) {
 			while ($row = $db->sql_fetch_row($res))
@@ -335,10 +336,11 @@ class tx_ms3commerce_DbUtils {
 	 * @param $limit         Optional. The LIMIT clause for the SELECT statement.
 	 * @return An array containing the identifiers of the child products.
 	 */
-	function getChildProducts($parentGroupId, $limit = '') {
+	function getChildProducts($parentGroupId, $limit = '', $menuId = 0) {
+		if (!$menuId) $menuId = $this->getGroupMenuId($parentGroupId);
 		$productArray = array();
 		$res = $this->db->exec_SELECTquery(
-				"m2.`ProductId`, m2.`Id`", "Menu m1, Menu m2", "m1.Id = m2.ParentId AND m1.GroupId = $parentGroupId AND m2.`ProductId` IS NOT NULL", '', 'm2.Ordinal', $limit);
+				"m2.`ProductId`, m2.`Id`", "Menu m1, Menu m2", "m1.Id = m2.ParentId AND m1.Id = $menuId AND m2.`ProductId` IS NOT NULL", '', 'm2.Ordinal', $limit);
 		if ($res) {
 			while ($row = $this->db->sql_fetch_object($res)) {
 				$productArray[] = array($row->ProductId, $row->Id);
@@ -724,11 +726,12 @@ class tx_ms3commerce_DbUtils {
 	 * @param $limit         Optional. The LIMIT clause for the SELECT statement.
 	 * @return An array containing the identifiers of the child products.
 	 */
-	function getChildDocument($parentGroupId, $limit = '') {
+	function getChildDocument($parentGroupId, $limit = '', $menuId = 0) {
+		if (!$menuId) $menuId = $this->getGroupMenuId($parentGroupId);
 		$db = $this->db;
 		$documentArray = array();
 		$res = $db->exec_SELECTquery(
-				"m2.`DocumentId`, m2.`Id`", "Menu m1, Menu m2", "m1.Id = m2.ParentId AND m1.GroupId = $parentGroupId AND m2.`DocumentId` IS NOT NULL", '', 'm2.Ordinal', $limit);
+				"m2.`DocumentId`, m2.`Id`", "Menu m1, Menu m2", "m1.Id = m2.ParentId AND m1.Id = $menuId AND m2.`DocumentId` IS NOT NULL", '', 'm2.Ordinal', $limit);
 		if ($res) {
 			while ($row = $db->sql_fetch_object($res)) {
 				$documentArray[] = array($row->DocumentId, $row->Id);
