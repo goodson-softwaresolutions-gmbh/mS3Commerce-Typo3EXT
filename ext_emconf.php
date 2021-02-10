@@ -29,7 +29,7 @@ $EM_CONF[$_EXTKEY] = array(
 	'clearCacheOnLoad' => 0,
 	'lockType' => '',
 	'author_company' => 'Goodson GmbH',
-	'version' => '6.3.1.21060',
+	'version' => '6.4.0.21060',
 	'constraints' => array(
 		'depends' => array(
 		),
